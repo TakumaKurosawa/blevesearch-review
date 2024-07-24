@@ -1,21 +1,62 @@
 package searchstore
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/blevesearch/bleve/v2"
+	"github.com/blevesearch/bleve/v2/analysis/analyzer/custom"
+	"github.com/blevesearch/bleve/v2/analysis/analyzer/keyword"
+	"github.com/blevesearch/bleve/v2/analysis/analyzer/web"
+	"github.com/blevesearch/bleve/v2/analysis/token/lowercase"
 	bleveIdx "github.com/blevesearch/bleve_index_api"
+	"github.com/ikawaha/bleveplugin/analysis/lang/ja"
 )
 
 type Store struct {
 	index bleve.Index
 }
 
+func (s *Store) Close() {
+	s.index.Close()
+}
+
 func NewStore(path string) (*Store, error) {
 	index, err := bleve.Open(path)
 	if err != nil {
-		mapping := bleve.NewIndexMapping()
-		index, err = bleve.New(path, mapping)
+		keywordFieldMapping := bleve.NewTextFieldMapping()
+		keywordFieldMapping.Analyzer = keyword.Name
+		webFieldMapping := bleve.NewTextFieldMapping()
+		webFieldMapping.Analyzer = web.Name
+		jaTextFieldMapping := bleve.NewTextFieldMapping()
+		jaTextFieldMapping.Analyzer = "ja"
+		dm := bleve.NewDocumentMapping()
+		dm.AddFieldMappingsAt("EmpNum", keywordFieldMapping)
+		dm.AddFieldMappingsAt("FullName", jaTextFieldMapping)
+		dm.AddFieldMappingsAt("FullNameKana", jaTextFieldMapping)
+		dm.AddFieldMappingsAt("Email", webFieldMapping)
+
+		idxMapping := bleve.NewIndexMapping()
+		if err := idxMapping.AddCustomTokenizer("ja_tokenizer", map[string]any{
+			"type":      ja.Name,
+			"dict":      ja.DictIPA,
+			"base_form": true,
+			"stop_tags": true,
+		}); err != nil {
+			return nil, fmt.Errorf("failed to create ja tokenizer: %w", err)
+		}
+		if err := idxMapping.AddCustomAnalyzer("ja", map[string]any{
+			"type":      custom.Name,
+			"tokenizer": "ja_tokenizer",
+			"token_filters": []string{
+				ja.StopWordsName,
+				lowercase.Name,
+			},
+		}); err != nil {
+			return nil, fmt.Errorf("failed to create ja analyzer: %w", err)
+		}
+
+		index, err = bleve.NewMemOnly(idxMapping)
 		if err != nil {
 			log.Println(err)
 
@@ -30,19 +71,19 @@ func (s *Store) CreateIndex() error {
 	users := []*User{
 		{
 			EmpNum:       "S11601",
-			FullName:     "黒澤 拓磨",
+			FullName:     "黒澤　拓磨",
 			FullNameKana: "ｸﾛｻﾜ　ﾀｸﾏ",
 			Email:        "kurosawa_takuma@cyberagenet.co.jp",
 		},
 		{
 			EmpNum:       "S11602",
-			FullName:     "黒澤 あきら",
+			FullName:     "黒澤　あきら",
 			FullNameKana: "ｸﾛｻﾜ　ｱｷﾗ",
 			Email:        "kurosawa_akira@cyberagenet.co.jp",
 		},
 		{
 			EmpNum:       "S11603",
-			FullName:     "黒澤 拓実",
+			FullName:     "黒澤　拓実",
 			FullNameKana: "ｸﾛｻﾜ　ﾀｸﾐ",
 			Email:        "kurosawa_takumi@cyberagenet.co.jp",
 		},
@@ -57,7 +98,7 @@ func (s *Store) CreateIndex() error {
 }
 
 func (s *Store) Search(keyword string) ([]*User, error) {
-	query := bleve.NewMatchQuery(keyword)
+	query := bleve.NewQueryStringQuery(keyword)
 	search := bleve.NewSearchRequest(query)
 	searchResults, err := s.index.Search(search)
 	if err != nil {
