@@ -22,46 +22,44 @@ func (s *Store) Close() {
 }
 
 func NewStore(path string) (*Store, error) {
-	index, err := bleve.Open(path)
+	idxMapping := bleve.NewIndexMapping()
+	dm := bleve.NewDocumentMapping()
+	idxMapping.AddDocumentMapping("user", dm)
+	keywordFieldMapping := bleve.NewTextFieldMapping()
+	keywordFieldMapping.Analyzer = keyword.Name
+	webFieldMapping := bleve.NewTextFieldMapping()
+	webFieldMapping.Analyzer = web.Name
+	jaTextFieldMapping := bleve.NewTextFieldMapping()
+	jaTextFieldMapping.Analyzer = "ja"
+	dm.AddFieldMappingsAt("EmpNum", keywordFieldMapping)
+	dm.AddFieldMappingsAt("FullName", jaTextFieldMapping)
+	dm.AddFieldMappingsAt("FullNameKana", jaTextFieldMapping)
+	dm.AddFieldMappingsAt("Email", webFieldMapping)
+
+	if err := idxMapping.AddCustomTokenizer("ja_tokenizer", map[string]any{
+		"type":      ja.Name,
+		"dict":      ja.DictIPA,
+		"base_form": true,
+		"stop_tags": true,
+	}); err != nil {
+		return nil, fmt.Errorf("failed to create ja tokenizer: %w", err)
+	}
+	if err := idxMapping.AddCustomAnalyzer("ja", map[string]any{
+		"type":      custom.Name,
+		"tokenizer": "ja_tokenizer",
+		"token_filters": []string{
+			ja.StopWordsName,
+			lowercase.Name,
+		},
+	}); err != nil {
+		return nil, fmt.Errorf("failed to create ja analyzer: %w", err)
+	}
+
+	index, err := bleve.NewMemOnly(idxMapping)
 	if err != nil {
-		keywordFieldMapping := bleve.NewTextFieldMapping()
-		keywordFieldMapping.Analyzer = keyword.Name
-		webFieldMapping := bleve.NewTextFieldMapping()
-		webFieldMapping.Analyzer = web.Name
-		jaTextFieldMapping := bleve.NewTextFieldMapping()
-		jaTextFieldMapping.Analyzer = "ja"
-		dm := bleve.NewDocumentMapping()
-		dm.AddFieldMappingsAt("EmpNum", keywordFieldMapping)
-		dm.AddFieldMappingsAt("FullName", jaTextFieldMapping)
-		dm.AddFieldMappingsAt("FullNameKana", jaTextFieldMapping)
-		dm.AddFieldMappingsAt("Email", webFieldMapping)
+		log.Println(err)
 
-		idxMapping := bleve.NewIndexMapping()
-		if err := idxMapping.AddCustomTokenizer("ja_tokenizer", map[string]any{
-			"type":      ja.Name,
-			"dict":      ja.DictIPA,
-			"base_form": true,
-			"stop_tags": true,
-		}); err != nil {
-			return nil, fmt.Errorf("failed to create ja tokenizer: %w", err)
-		}
-		if err := idxMapping.AddCustomAnalyzer("ja", map[string]any{
-			"type":      custom.Name,
-			"tokenizer": "ja_tokenizer",
-			"token_filters": []string{
-				ja.StopWordsName,
-				lowercase.Name,
-			},
-		}); err != nil {
-			return nil, fmt.Errorf("failed to create ja analyzer: %w", err)
-		}
-
-		index, err = bleve.NewMemOnly(idxMapping)
-		if err != nil {
-			log.Println(err)
-
-			return nil, err
-		}
+		return nil, err
 	}
 
 	return &Store{index: index}, nil
@@ -94,12 +92,45 @@ func (s *Store) CreateIndex() error {
 		}
 	}
 
+	docCount, err := s.index.DocCount()
+	if err != nil {
+		log.Println(err)
+
+		return err
+	}
+	fmt.Printf("doc count: %d\n", docCount)
+
 	return nil
 }
 
-func (s *Store) Search(keyword string) ([]*User, error) {
-	query := bleve.NewQueryStringQuery(keyword)
-	search := bleve.NewSearchRequest(query)
+type QueryType int
+
+const (
+	QueryTypeTerm QueryType = iota
+	QueryTypeString
+	QueryTypeWildcard
+	QueryTypeMatchPhraseQuery
+)
+
+func (s *Store) Search(queryType QueryType, keyword string) ([]*User, error) {
+	var search *bleve.SearchRequest
+	switch queryType {
+	case QueryTypeTerm:
+		query := bleve.NewTermQuery(keyword)
+		search = bleve.NewSearchRequest(query)
+	case QueryTypeString:
+		query := bleve.NewQueryStringQuery(keyword)
+		search = bleve.NewSearchRequest(query)
+	case QueryTypeWildcard:
+		query := bleve.NewWildcardQuery("*" + keyword + "*")
+		search = bleve.NewSearchRequest(query)
+	case QueryTypeMatchPhraseQuery:
+		query := bleve.NewMatchPhraseQuery(keyword)
+		search = bleve.NewSearchRequest(query)
+	default:
+		return nil, fmt.Errorf("unsupported query type: %d", queryType)
+	}
+
 	searchResults, err := s.index.Search(search)
 	if err != nil {
 		return nil, err

@@ -25,7 +25,7 @@ func main() {
 
 	func() {
 		keyword := "S11601"
-		result, err := store.Search(keyword)
+		result, err := store.Search(searchstore.QueryTypeTerm, keyword)
 		if err != nil {
 			log.Println(err)
 
@@ -41,7 +41,7 @@ func main() {
 
 	func() {
 		keyword := "kurosawa"
-		result, err := store.Search(keyword)
+		result, err := store.Search(searchstore.QueryTypeWildcard, keyword)
 		if err != nil {
 			log.Println(err)
 
@@ -57,7 +57,7 @@ func main() {
 
 	func() {
 		keyword := "kurosawa_takuma"
-		result, err := store.Search(keyword)
+		result, err := store.Search(searchstore.QueryTypeWildcard, keyword)
 		if err != nil {
 			log.Println(err)
 
@@ -73,7 +73,7 @@ func main() {
 
 	func() {
 		keyword := "ｸﾛｻﾜ"
-		result, err := store.Search(keyword)
+		result, err := store.Search(searchstore.QueryTypeWildcard, keyword)
 		if err != nil {
 			log.Println(err)
 
@@ -89,7 +89,7 @@ func main() {
 
 	func() {
 		keyword := "拓磨"
-		result, err := store.Search(keyword)
+		result, err := store.Search(searchstore.QueryTypeString, keyword)
 		if err != nil {
 			log.Println(err)
 

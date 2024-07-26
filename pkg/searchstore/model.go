@@ -1,9 +1,9 @@
 package searchstore
 
 type User struct {
-	EmpNum       string
-	FullName     string
-	FullNameKana string
-	Email        string
-	Score        float64
+	EmpNum       string  `json:"EmpNum"`
+	FullName     string  `json:"FullName"`
+	FullNameKana string  `json:"FullNameKana"`
+	Email        string  `json:"email"`
+	Score        float64 `json:"score"`
 }
