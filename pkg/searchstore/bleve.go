@@ -24,7 +24,6 @@ func (s *Store) Close() {
 func NewStore(path string) (*Store, error) {
 	idxMapping := bleve.NewIndexMapping()
 	dm := bleve.NewDocumentMapping()
-	idxMapping.AddDocumentMapping("user", dm)
 	keywordFieldMapping := bleve.NewTextFieldMapping()
 	keywordFieldMapping.Analyzer = keyword.Name
 	webFieldMapping := bleve.NewTextFieldMapping()
@@ -35,6 +34,7 @@ func NewStore(path string) (*Store, error) {
 	dm.AddFieldMappingsAt("FullName", jaTextFieldMapping)
 	dm.AddFieldMappingsAt("FullNameKana", jaTextFieldMapping)
 	dm.AddFieldMappingsAt("Email", webFieldMapping)
+	idxMapping.AddDocumentMapping("user", dm)
 
 	if err := idxMapping.AddCustomTokenizer("ja_tokenizer", map[string]any{
 		"type":      ja.Name,
