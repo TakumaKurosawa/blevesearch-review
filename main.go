@@ -80,11 +80,27 @@ func main() {
 			return
 		}
 
-		fmt.Printf("-------- keyword: %s ----------\n", keyword)
+		fmt.Printf("-------- string query keyword: %s ----------\n", keyword)
 		for i, user := range result {
 			log.Printf("user%d: %#v", i+1, user)
 		}
-		fmt.Printf("-------- keyword: %s ----------\n\n", keyword)
+		fmt.Printf("-------- string query keyword: %s ----------\n\n", keyword)
+	}()
+
+	func() {
+		keyword := "ｸﾛｻﾜ"
+		result, err := store.Search(searchstore.QueryTypeMatchPhraseQuery, keyword)
+		if err != nil {
+			log.Println(err)
+
+			return
+		}
+
+		fmt.Printf("-------- match phrase query keyword: %s ----------\n", keyword)
+		for i, user := range result {
+			log.Printf("user%d: %#v", i+1, user)
+		}
+		fmt.Printf("-------- match phrase query keyword: %s ----------\n\n", keyword)
 	}()
 
 	func() {
@@ -96,11 +112,27 @@ func main() {
 			return
 		}
 
-		fmt.Printf("-------- keyword: %s ----------\n", keyword)
+		fmt.Printf("-------- string query keyword: %s ----------\n", keyword)
 		for i, user := range result {
 			log.Printf("user%d: %#v", i+1, user)
 		}
-		fmt.Printf("-------- keyword: %s ----------\n\n", keyword)
+		fmt.Printf("-------- string query keyword: %s ----------\n\n", keyword)
+	}()
+
+	func() {
+		keyword := "ｸﾛｻﾜ ﾀｸﾏ"
+		result, err := store.Search(searchstore.QueryTypeMatchPhraseQuery, keyword)
+		if err != nil {
+			log.Println(err)
+
+			return
+		}
+
+		fmt.Printf("-------- match phrase query keyword: %s ----------\n", keyword)
+		for i, user := range result {
+			log.Printf("user%d: %#v", i+1, user)
+		}
+		fmt.Printf("-------- match phrase query keyword: %s ----------\n\n", keyword)
 	}()
 
 	func() {
@@ -112,11 +144,27 @@ func main() {
 			return
 		}
 
-		fmt.Printf("-------- keyword: %s ----------\n", keyword)
+		fmt.Printf("-------- string query keyword: %s ----------\n", keyword)
 		for i, user := range result {
 			log.Printf("user%d: %#v", i+1, user)
 		}
-		fmt.Printf("-------- keyword: %s ----------\n\n", keyword)
+		fmt.Printf("-------- string query keyword: %s ----------\n\n", keyword)
+	}()
+
+	func() {
+		keyword := "拓磨"
+		result, err := store.Search(searchstore.QueryTypeMatchPhraseQuery, keyword)
+		if err != nil {
+			log.Println(err)
+
+			return
+		}
+
+		fmt.Printf("-------- match phrase query keyword: %s ----------\n", keyword)
+		for i, user := range result {
+			log.Printf("user%d: %#v", i+1, user)
+		}
+		fmt.Printf("-------- match phrase query keyword: %s ----------\n\n", keyword)
 	}()
 
 	func() {
@@ -128,10 +176,26 @@ func main() {
 			return
 		}
 
-		fmt.Printf("-------- keyword: %s ----------\n", keyword)
+		fmt.Printf("-------- string query keyword: %s ----------\n", keyword)
 		for i, user := range result {
 			log.Printf("user%d: %#v", i+1, user)
 		}
-		fmt.Printf("-------- keyword: %s ----------\n\n", keyword)
+		fmt.Printf("-------- string query keyword: %s ----------\n\n", keyword)
+	}()
+
+	func() {
+		keyword := "黒澤　拓磨"
+		result, err := store.Search(searchstore.QueryTypeMatchPhraseQuery, keyword)
+		if err != nil {
+			log.Println(err)
+
+			return
+		}
+
+		fmt.Printf("-------- match phrase query keyword: %s ----------\n", keyword)
+		for i, user := range result {
+			log.Printf("user%d: %#v", i+1, user)
+		}
+		fmt.Printf("-------- match phrase query keyword: %s ----------\n\n", keyword)
 	}()
 }
