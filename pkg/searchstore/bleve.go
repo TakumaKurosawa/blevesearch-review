@@ -10,7 +10,6 @@ import (
 	"github.com/blevesearch/bleve/v2/analysis/analyzer/web"
 	"github.com/blevesearch/bleve/v2/analysis/token/lowercase"
 	bleveIdx "github.com/blevesearch/bleve_index_api"
-	"github.com/ikawaha/bleveplugin/analysis/lang/ja"
 )
 
 type Store struct {
@@ -37,8 +36,8 @@ func NewStore(path string) (*Store, error) {
 	idxMapping := bleve.NewIndexMapping()
 	idxMapping.AddDocumentMapping("user", dm)
 	if err := idxMapping.AddCustomTokenizer("ja_tokenizer", map[string]any{
-		"type":      ja.Name,
-		"dict":      ja.DictIPA,
+		"type":      Name,
+		"dict":      DictIPA,
 		"base_form": true,
 		"stop_tags": true,
 	}); err != nil {
@@ -48,7 +47,7 @@ func NewStore(path string) (*Store, error) {
 		"type":      custom.Name,
 		"tokenizer": "ja_tokenizer",
 		"token_filters": []string{
-			ja.StopWordsName,
+			StopWordsName,
 			lowercase.Name,
 		},
 	}); err != nil {
