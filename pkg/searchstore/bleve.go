@@ -67,22 +67,22 @@ func NewStore(path string) (*Store, error) {
 func (s *Store) CreateIndex() error {
 	users := []*User{
 		{
-			EmpNum:       "S11601",
+			EmpNum:       "A1000",
 			FullName:     "黒澤　拓磨",
 			FullNameKana: "ｸﾛｻﾜ　ﾀｸﾏ",
-			Email:        "kurosawa_takuma@cyberagenet.co.jp",
+			Email:        "kurosawa_takuma@example.com",
 		},
 		{
-			EmpNum:       "S11602",
+			EmpNum:       "A1001",
 			FullName:     "黒澤　あきら",
 			FullNameKana: "ｸﾛｻﾜ　ｱｷﾗ",
-			Email:        "kurosawa_akira@cyberagenet.co.jp",
+			Email:        "kurosawa_akira@example.com",
 		},
 		{
-			EmpNum:       "S11603",
+			EmpNum:       "A1003",
 			FullName:     "黒澤　拓実",
 			FullNameKana: "ｸﾛｻﾜ　ﾀｸﾐ",
-			Email:        "kurosawa_takumi@cyberagenet.co.jp",
+			Email:        "kurosawa_takumi@example.com",
 		},
 	}
 	for _, u := range users {

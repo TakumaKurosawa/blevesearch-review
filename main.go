@@ -24,7 +24,7 @@ func main() {
 	}
 
 	func() {
-		keyword := "s11601"
+		keyword := "a1001"
 		result, err := store.Search(searchstore.QueryTypeTerm, keyword)
 		if err != nil {
 			log.Println(err)
